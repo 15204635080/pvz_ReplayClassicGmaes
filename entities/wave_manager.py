@@ -120,7 +120,13 @@ class WaveManager:
         eligible = [r for r in range(self.rows) if self.row_spawned_this_wave[r] < self.row_max_spawn_this_wave[r]]
         if not eligible:
             return None, False
-        best_row = max(eligible, key=lambda r: now - self.last_spawn_time_per_row.get(r, 0))
+        cooling_times = [now - self.last_spawn_time_per_row.get(r, 0) for r in eligible]
+        max_cooling = max(cooling_times)
+
+        # 找出所有冷却时间等于最大值的行
+        best_rows = [r for r, cooling in zip(eligible, cooling_times) if cooling == max_cooling]
+        # 随机选择其中一行
+        best_row = random.choice(best_rows)
         all_protected = all(
             r in self.row_protected_until_wave and self.current_wave_index <= self.row_protected_until_wave[r]
             for r in range(self.rows))
